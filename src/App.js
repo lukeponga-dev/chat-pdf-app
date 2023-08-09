@@ -1,25 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component{
+  state = {
+    question: '',
+    responses: [],
+  };
+
+  render(){
+    return(
+      <div>
+        <div>
+          {this.state.responses.map((response, index) =>
+            <li key={index}>{response}</li>
+          )}
+        </div>
+        
+        <input
+          type="text"
+          value={this.state.question} 
+          onChange={event => this.setState({ question: event.target.value })} 
+        />
+
+        <button onClick={this.handleSubmit}>Submit</button>
+      </div>
+    );
+  }
 }
-
 export default App;
