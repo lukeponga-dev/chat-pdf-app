@@ -27,44 +27,135 @@ It correctly bundles React in production mode and optimizes the build for the be
 The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### `Project Documentation`
 
-### `npm run eject`
+Sure, in order to build a website using the ChatPDF API, with React and JavaScript, you can follow the below steps:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+**1. Setup a new React Application**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+To start, create a new React application using create-react-app or any other method you prefer. On your terminal, run the following commands:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npx create-react-app chat-pdf-app
+cd chat-pdf-app
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+**2. Create a User Interface for Chat**
 
-## Learn More
+In your chosen component file (for instance, `App.js`), create a simple chat interface with an input component for the user to type their questions, and an output component to display the responses.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Here's a very simple example:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```jsx
+import React from 'react';
 
-### Code Splitting
+class App extends React.Component {
+  state = { 
+    question: '',
+    responses: [],
+  };
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+  render() {
+    return (
+      <div>
+        <div>
+          {this.state.responses.map((response, index) =>
+            <li key={index}>{response}</li>
+          )}
+        </div>
 
-### Analyzing the Bundle Size
+        <input
+          type="text"
+          value={this.state.question} 
+          onChange={event => this.setState({ question: event.target.value })} 
+        />
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+        <button onClick={this.handleSubmit}>Submit</button>
+      </div>
+    );
+  }
+}
 
-### Making a Progressive Web App
+export default App;
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+**3. Backend Server Setup**
 
-### Advanced Configuration
+You should hide your sensitive information (like your API keys) on the server-side. So, in this guide, let's assume you have a Node.js server running with Express.js.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+You can use `axios` to make http requests from your Node server to the ChatPDF API.
 
-### Deployment
+First, install `axios` with npm:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```
+npm install axios
+```
 
-### `npm run build` fails to minify
+Then, you can set up a route in your server file (like `server.js`) to handle chat message submission:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```javascript
+const express = require('express');
+const cors = require('cors');
+const axios = require('axios')
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.post('/api/chat', async (req, res) => {
+  const { question, sourceId } = req.body;
+  
+  try {
+    const response = await axios.post('https://api.chatpdf.com/v1/chats/message', {
+      sourceId: sourceId,
+      messages: [
+        {
+          role: 'user',
+          content: question,
+        },
+      ],
+    }, {
+      headers: {
+        'x-api-key': 'YOUR_CHATPDF_API_KEY',
+      }
+    });
+    
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).send('Error handling chat message');
+  }
+});
+
+app.listen(5000, () => {
+  console.log('Server is running on port 5000');
+});
+```
+
+In this example replace `'YOUR_CHATPDF_API_KEY'` with your own key. This route listens for POST requests at `/api/chat`, take the user's question and `sourceId` from body, makes a POST request to the ChatPDF API, and returns the response.
+
+**4. Calling the Backend from the React App**
+
+Finally, back in your React app, implement the `handleSubmit` function to make a POST request to your server when the user submits a question. Install `axios` in your React app to make the HTTP request.
+
+```jsx
+import axios from 'axios';
+
+// Inside your component
+handleSubmit = async () => {
+  const response = await axios.post('http://localhost:5000/api/chat', {
+    question: this.state.question,
+    sourceId: 'src_xxxxxx',
+  });
+  
+  this.setState(prevState => ({
+    responses: [...prevState.responses, response.data.content],
+    question: '',
+  }));
+};
+```
+
+Replace `'src_xxxxxx'` with your source ID. This function sends the user's question and the `sourceId` to your server, gets the response from the ChatPDF API, and adds it to the `responses` array in state.
+
+Please note, this a very basic example and might not include best practices for error handling and scalability. Be sure to understand this code and refactor based on your requirements when you are deploying in production. Including error handling and user notification mechanisms would be essential for a production application.
+
+Let me know if you need help on any of these steps, I'd be glad to elaborate or discuss further!
